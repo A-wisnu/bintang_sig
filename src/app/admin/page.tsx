@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
   Plus,
@@ -136,6 +136,7 @@ export default function AdminDashboard() {
   const [filterCategory, setFilterCategory] = useState("");
   const [filterCondition, setFilterCondition] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const selectAllRef = useRef<HTMLInputElement | null>(null);
 
   const filteredLocations = useMemo(() => {
     return locations.filter((location) => {
@@ -152,6 +153,12 @@ export default function AdminDashboard() {
       return matchesSearch && matchesCategory && matchesCondition;
     });
   }, [locations, searchQuery, filterCategory, filterCondition]);
+
+  useEffect(() => {
+    if (!selectAllRef.current) return;
+    selectAllRef.current.indeterminate =
+      selectedIds.length > 0 && selectedIds.length < filteredLocations.length;
+  }, [selectedIds.length, filteredLocations.length]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredLocations.length) {
@@ -372,13 +379,10 @@ export default function AdminDashboard() {
                   <input
                     type="checkbox"
                     aria-label="Pilih semua"
+                    ref={selectAllRef}
                     checked={
                       filteredLocations.length > 0 &&
                       selectedIds.length === filteredLocations.length
-                    }
-                    indeterminate={
-                      selectedIds.length > 0 &&
-                      selectedIds.length < filteredLocations.length
                     }
                     onChange={toggleSelectAll}
                     className="h-4 w-4"
